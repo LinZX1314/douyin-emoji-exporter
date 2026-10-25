@@ -59,7 +59,7 @@
 
 ### 最快用法：拖放
 
-**把脚本导出的 `emoji-list-xxx.json` 直接拖到 `拖放JSON到这里.lnk`（或 `转换器\表情转换器.exe`）上。**
+**把脚本导出的 `emoji-list-xxx.json` 直接拖到 `拖放JSON到这里.lnk`（或 `表情转换器.exe`）上。**
 
 程序会在 exe 同级目录下新建一个文件夹（名字带清单名和时间戳），产物就在里面：
 
@@ -81,9 +81,9 @@
 ### 命令行用法（可选）
 
 ```bash
-转换器\表情转换器.exe emoji-list.json                  # 基本用法
-转换器\表情转换器.exe emoji-list.json --max-side 240   # 带参数
-转换器\表情转换器.exe --help                           # 全部参数
+表情转换器.exe emoji-list.json                  # 基本用法
+表情转换器.exe emoji-list.json --max-side 240   # 带参数
+表情转换器.exe --help                           # 全部参数
 ```
 
 ### 常用参数
