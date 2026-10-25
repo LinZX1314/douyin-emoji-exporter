@@ -61,12 +61,12 @@
 
 **把脚本导出的 `emoji-list-xxx.json` 直接拖到 `拖放JSON到这里.lnk`（或 `转换器\表情转换器.exe`）上。**
 
-程序会在 `转换器\` 目录下新建一个文件夹（名字带清单名和时间戳），产物就在里面：
+程序会在 exe 同级目录下新建一个文件夹（名字带清单名和时间戳），产物就在里面：
 
 ```
-转换器\
+表情转换器\
 ├── 表情转换器.exe
-├── _internal\                 运行库，别删
+├── 拖放JSON到这里.lnk
 └── emoji-list_1026-0030\      ← 产物在这里
     ├── emoji_0001.gif
     ├── emoji_0002.gif
@@ -134,20 +134,20 @@ python convert.py input/emoji-list.json
 
 ## 关于打包成 exe
 
-Release 提供的是 PyInstaller **onefile** 单文件版：`表情转换器.exe`，**22 MB**，解压后目录里只有这一个 exe（加一个快捷方式和说明）。
+Release 提供的是 PyInstaller **onefile 单文件版**：`表情转换器.exe`，**22 MB**。解压后目录里只有这一个 exe（外加一个拖放快捷方式和说明文档），没有任何依赖库目录。
 
 体积对比：
 
 | 方案 | 体积 | 能否处理动画 WebP |
 | --- | --- | --- |
 | **Python + PyInstaller（onefile）** | **22 MB 单文件** | ✅ 可以（Pillow 完整支持） |
-| Python + PyInstaller（onedir） | 46 MB 目录 | ✅ 可以，但要多带 90 个文件 |
+| Python + PyInstaller（onedir） | 46 MB 目录（90 个文件） | ✅ 可以，但要多带一堆文件 |
 | Go（仅标准库） | 9.6 MB | ❌ 不支持 |
 | Go（+ x/image/webp） | 2.6 MB | ❌ 只能解第一帧，动画报错 |
 
 **为什么不用 Go**：抖音的表情**全部是动画 WebP**。实测 `golang.org/x/image/webp` 对动画 WebP 直接报 `webp: invalid format`，只能解第一帧。要用 Go 处理只能 CGO 绑 libwebp（捆 DLL、失去静态单文件优势）或自己实现 RIFF/ANMF + VP8 解码（等于重写解码器）。Pillow 开箱即用完整支持动画 WebP、透明通道和自适应调色板量化。
 
-**关于 onefile 的小提示**：单文件版每次启动要把内容解压到 `%TEMP%`，所以首次启动会比 onedir 慢一两秒。如果你的临时目录被安全软件限制，可能看到 `Could not create temporary directory!`，此时把 exe 换个目录或改用源码版即可。
+**关于 onefile 的启动**：单文件版启动时要把自身内容解压到临时目录，因此首次启动会比带库目录的版本慢 1~2 秒，属正常现象。打包时已用 `--runtime-tmpdir "."` 指定为 exe 所在目录，避免某些系统上默认临时目录不可写导致的 `Could not create temporary directory!` 报错；程序退出会自动清理，不会残留文件。
 
 ---
 
@@ -189,9 +189,9 @@ douyin-emoji-exporter/
 **Release 压缩包解压后**：
 
 ```
-emoji-converter-win64/
+表情转换器/
 ├── 拖放JSON到这里.lnk      ← 把 JSON 拖到这个上面即可
-├── 表情转换器.exe          单文件，免安装
+├── 表情转换器.exe          单文件，22 MB，免安装
 └── 使用说明.md
 ```
 
