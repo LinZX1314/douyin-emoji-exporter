@@ -20,16 +20,14 @@
 
 ## 快速开始
 
-```
-1. 下载 Releases 里的 表情转换器.zip，解压
-2. 装油猴脚本 → 在抖音里抓取 → 得到 emoji-list-xxx.json
-3. 把 json 拖到「拖放JSON到这里.lnk」上（或直接拖到 表情转换器.exe）
-4. 产物出现在 表情转换器\<清单名>_<时间>\ 里
-```
+1. 到 [Releases](https://github.com/LinZX1314/douyin-emoji-exporter/releases/latest) 下载 `emoji-converter-win64.zip` 并解压
+2. 装油猴脚本 → 在抖音里抓取 → 得到 `emoji-list-xxx.json`
+3. 把 json 拖到「拖放JSON到这里.lnk」上（或直接拖到 `表情转换器.exe` 上）
+4. 产物出现在 `emoji-list_<日期>-<时间>\` 文件夹里
 
-转换器不需要安装 Python，双击即用。
+**转换器是单文件 exe，22 MB，无需安装 Python。**
 
-> 也可以只用源码：`pip install pillow requests` 后运行 `converter/convert.py`。
+> 也可以只用源码：`pip install -r converter/requirements.txt` 后运行 `python converter/convert.py <清单.json>`
 
 ---
 
@@ -136,17 +134,20 @@ python convert.py input/emoji-list.json
 
 ## 关于打包成 exe
 
-最终 `转换器\` 目录约 46 MB（exe + `_internal` 运行库）。用的是 PyInstaller **onedir** 模式。
+Release 提供的是 PyInstaller **onefile** 单文件版：`表情转换器.exe`，**22 MB**，解压后目录里只有这一个 exe（加一个快捷方式和说明）。
 
 体积对比：
 
 | 方案 | 体积 | 能否处理动画 WebP |
 | --- | --- | --- |
-| **Python + PyInstaller（onedir）** | **46 MB** | ✅ 可以（Pillow 完整支持） |
-| Python + PyInstaller（onefile） | 22 MB | ✅ 可以，但本机环境下解压临时目录失败 |
+| **Python + PyInstaller（onefile）** | **22 MB 单文件** | ✅ 可以（Pillow 完整支持） |
+| Python + PyInstaller（onedir） | 46 MB 目录 | ✅ 可以，但要多带 90 个文件 |
+| Go（仅标准库） | 9.6 MB | ❌ 不支持 |
+| Go（+ x/image/webp） | 2.6 MB | ❌ 只能解第一帧，动画报错 |
 
+**为什么不用 Go**：抖音的表情**全部是动画 WebP**。实测 `golang.org/x/image/webp` 对动画 WebP 直接报 `webp: invalid format`，只能解第一帧。要用 Go 处理只能 CGO 绑 libwebp（捆 DLL、失去静态单文件优势）或自己实现 RIFF/ANMF + VP8 解码（等于重写解码器）。Pillow 开箱即用完整支持动画 WebP、透明通道和自适应调色板量化。
 
-**为什么不用 onefile（单文件 22MB）**：实测该单文件 exe 放在 `Downloads` 目录下运行时，会报 `Could not create temporary directory!` 而无法启动（同一文件放在 `AppData\Temp` 下却正常）。onefile 每次运行都要把内容解压到临时目录，在某些目录/沙箱环境下不可靠。onedir 不需要解压，启动更快也更稳，代价是目录里多一个 `_internal`。
+**关于 onefile 的小提示**：单文件版每次启动要把内容解压到 `%TEMP%`，所以首次启动会比 onedir 慢一两秒。如果你的临时目录被安全软件限制，可能看到 `Could not create temporary directory!`，此时把 exe 换个目录或改用源码版即可。
 
 ---
 
@@ -188,13 +189,13 @@ douyin-emoji-exporter/
 **Release 压缩包解压后**：
 
 ```
-表情转换器/
-├── 拖放JSON到这里.lnk          ← 把 JSON 拖到这个上面即可
-├── 表情转换器.exe              免安装，不需要 Python
-└── _internal/                  运行库，不要删除
+emoji-converter-win64/
+├── 拖放JSON到这里.lnk      ← 把 JSON 拖到这个上面即可
+├── 表情转换器.exe          单文件，免安装
+└── 使用说明.md
 ```
 
-产物位置：`表情转换器\<清单名>_<时间>\`
+产物位置：`emoji-list_<日期>-<时间>\`（和 exe 同级）
 
 ### 清单格式
 
