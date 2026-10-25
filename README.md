@@ -1,0 +1,243 @@
+# 抖音表情导出 · douyin-emoji-exporter
+
+把抖音「收藏表情」批量导出成本地文件，自动转成微信可直接发送的格式（动态转 GIF、静态转 PNG）。
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
+[![Tampermonkey](https://img.shields.io/badge/Tampermonkey-userscript-orange.svg)](https://www.tampermonkey.net/)
+
+**两个部件完全解耦**：
+
+```
+1. 油猴脚本      →  导出 emoji-list.json
+                          ↓
+2. 表情转换器.exe →  下载 + 转换 + 写入独立文件夹
+```
+
+两者之间只通过一个 JSON 文件交接 —— 不需要同时运行，不需要登录态，转换器可以随时重跑。
+
+---
+
+## 快速开始
+
+```
+1. 下载 Releases 里的 表情转换器.zip，解压
+2. 装油猴脚本 → 在抖音里抓取 → 得到 emoji-list-xxx.json
+3. 把 json 拖到「拖放JSON到这里.lnk」上（或直接拖到 表情转换器.exe）
+4. 产物出现在 表情转换器\<清单名>_<时间>\ 里
+```
+
+转换器不需要安装 Python，双击即用。
+
+> 也可以只用源码：`pip install pillow requests` 后运行 `converter/convert.py`。
+
+---
+
+## 第一部分：抓取脚本
+
+### 安装
+
+1. 浏览器安装 **Tampermonkey**（油猴）扩展
+2. 打开 Tampermonkey 面板 → 添加新脚本 → 粘贴 `userscript/douyin-emoji-exporter.user.js` 全文 → 保存
+
+### 使用
+
+1. 打开 <https://www.douyin.com/> 并登录
+2. 进入：**消息 → 任意私信 → 点输入框旁 😊 → 收藏的表情**
+3. 右下角会出现「表情抓取」面板，点 **开始抓取**
+   - 脚本会自动滚动到列表底部，把懒加载的表情全部加载出来
+   - 也可以按 `Ctrl+Shift+E` 快捷键
+4. 抓完点 **导出 JSON**，得到一个 `emoji-list-*.json` 文件
+
+### 关于「抓取不全」
+
+表情面板是**滚动加载**的。脚本会自动滚到底并等待列表稳定（连续 3 轮数量不再增加才停），所以正常情况下不需要手动滑。
+
+如果仍然不全，先手动滑到最底部再点抓取。
+
+---
+
+## 第二部分：转换器
+
+### 最快用法：拖放
+
+**把脚本导出的 `emoji-list-xxx.json` 直接拖到 `拖放JSON到这里.lnk`（或 `转换器\表情转换器.exe`）上。**
+
+程序会在 `转换器\` 目录下新建一个文件夹（名字带清单名和时间戳），产物就在里面：
+
+```
+转换器\
+├── 表情转换器.exe
+├── _internal\                 运行库，别删
+└── emoji-list_1026-0030\      ← 产物在这里
+    ├── emoji_0001.gif
+    ├── emoji_0002.gif
+    ├── ...
+    └── _report.txt
+```
+
+窗口会显示统计，看完按回车关闭。**重复拖放不会覆盖**，每次生成新文件夹。
+
+不需要 Python，不需要命令行。
+
+### 命令行用法（可选）
+
+```bash
+转换器\表情转换器.exe emoji-list.json                  # 基本用法
+转换器\表情转换器.exe emoji-list.json --max-side 240   # 带参数
+转换器\表情转换器.exe --help                           # 全部参数
+```
+
+### 常用参数
+
+| 参数 | 作用 |
+| --- | --- |
+| `--static-format webp` | 静态图改用 WebP（省约 30% 体积，无损） |
+| `--format webp` | 动图也保留原格式（体积最小，但微信动态 WebP 不会动） |
+| `--max-side 240` | 最大边长 240px，GIF 体积大幅下降 |
+| `--max-frames 30` | 动图最多 30 帧（抽帧，动画会变卡） |
+| `--max-mb 5` | 单文件超过 5MB 时自动降采样 |
+| `--workers 8` | 并发线程数（默认 4） |
+
+### 源码运行（开发用）
+
+```bash
+cd converter
+pip install pillow requests
+python convert.py input/emoji-list.json
+```
+
+---
+
+## 关于体积（重要）
+
+**GIF 格式本身决定了动图会比较大。** 这是格式限制，不是程序问题。
+
+实测 86 张表情（42 动图 + 44 静态，保留原始尺寸）：
+
+| 输出配置 | 总体积 | 说明 |
+| --- | --- | --- |
+| **默认（动图 GIF + 静态 PNG）** | **145.4 MB** | GIF 130.3 MB + PNG 15.1 MB |
+| `--static-format webp` | 140.9 MB | 静态图从 15.1 降到 10.7 MB |
+| `--max-side 240` | 约 73 MB | 缩到 240px，聊天窗口够用 |
+| `--format webp` | **约 22 MB** | 保留原始体积，但微信动态 WebP 不会动 |
+
+**为什么 GIF 这么大**：GIF 是帧间独立的，每帧都要完整存一张 256 色调色板图。实测「字节/像素/帧」稳定在 0.5~1.0，一个 148 帧、236×426 的动画，转成 GIF 必然接近 11MB。这个系数由 GIF 格式决定，**换任何语言都改变不了**。
+
+**怎么选**：
+
+- **要发微信能动** → 用默认的 GIF。微信单文件限制 25MB，最大那张 10.9MB 没问题
+- **只要静态图/存档** → `--format webp`，体积最小且完全无损
+- **量大且不在乎缩放** → `--max-side 240`
+
+静态图默认 **PNG**（兼容性最好，任何软件都能打开）。改 `--static-format webp` 可省约 30% 体积，且是无损重编码，画质与 PNG 一致。
+
+---
+
+## 关于打包成 exe
+
+最终 `转换器\` 目录约 46 MB（exe + `_internal` 运行库）。用的是 PyInstaller **onedir** 模式。
+
+体积对比：
+
+| 方案 | 体积 | 能否处理动画 WebP |
+| --- | --- | --- |
+| **Python + PyInstaller（onedir）** | **46 MB** | ✅ 可以（Pillow 完整支持） |
+| Python + PyInstaller（onefile） | 22 MB | ✅ 可以，但本机环境下解压临时目录失败 |
+
+
+**为什么不用 onefile（单文件 22MB）**：实测该单文件 exe 放在 `Downloads` 目录下运行时，会报 `Could not create temporary directory!` 而无法启动（同一文件放在 `AppData\Temp` 下却正常）。onefile 每次运行都要把内容解压到临时目录，在某些目录/沙箱环境下不可靠。onedir 不需要解压，启动更快也更稳，代价是目录里多一个 `_internal`。
+
+---
+
+## 转换器做了什么
+
+1. **读清单** → 解析 JSON，按 `id` 去重
+2. **并发下载** → 每张重试 2 次，403/404 不重试（签名失效重试没意义）
+3. **按帧数分流**
+   - 帧数 > 1 → 转 GIF（保留真实帧延时、透明通道）
+   - 帧数 = 1 → 转 PNG（或按 `--static-format` 改 WebP）
+4. **写盘** → 先写 `.tmp` 再原子替换，避免中断留下半个文件
+5. **写报告** → 产物目录下 `_report.txt`，记录每个文件的大小/帧数/来源 URL
+
+### GIF 转换的关键处理
+
+- **透明通道**：单独提取 alpha 做掩模，半透明也算透明，避免边缘发黑
+- **调色板**：强制索引 255 留给透明，防止某些图丢透明
+- **帧延时**：自己解析 WebP 的 ANMF chunk（Pillow 读不到，否则所有帧都会变成 100ms，动画速度失真）
+- **disposal=2**：每帧后恢复背景，防止动态残影
+
+---
+
+## 文件结构
+
+**仓库内容（源码）**：
+
+```
+douyin-emoji-exporter/
+├── userscript/
+│   └── douyin-emoji-exporter.user.js   油猴脚本（抓 URL → JSON）
+├── converter/
+│   ├── convert.py                      转换器源码
+│   ├── requirements.txt
+│   └── input/emoji-list.json           清单格式示例
+├── README.md
+└── LICENSE
+```
+
+**Release 压缩包解压后**：
+
+```
+表情转换器/
+├── 拖放JSON到这里.lnk          ← 把 JSON 拖到这个上面即可
+├── 表情转换器.exe              免安装，不需要 Python
+└── _internal/                  运行库，不要删除
+```
+
+产物位置：`表情转换器\<清单名>_<时间>\`
+
+### 清单格式
+
+```json
+{
+  "version": 1,
+  "captured_at": "2026-10-26T00:10:00+08:00",
+  "source": "https://www.douyin.com/",
+  "total": 86,
+  "animated": 42,
+  "static": 44,
+  "items": [
+    {
+      "id": "o8BABlJUEEMAAjdQZ4TfEFz0DDehBeI1H9sKrA",
+      "url": "https://p26-im-emoticon-sign.byteimg.com/...",
+      "w": 240,
+      "h": 240,
+      "animated": true
+    }
+  ]
+}
+```
+
+`id` 取自 URL 中 `~tplv` 之前那段（实测 86 个全部唯一）。不能用路径末段——那是 resize 参数，很多表情相同。
+
+---
+
+## 常见问题
+
+**Q：转换时大量 403？**
+签名 URL 的 `x-expires` 到期了（实测约 1 年）。重新抓一次即可。
+
+**Q：脚本抓到的表情不全？**
+先手动把表情面板滑到最底部，再点抓取。
+
+**Q：能不能不装油猴？**
+可以。直接把 `emoji-list.json` 里的 `items` 手填 URL 就行，转换器不关心 URL 从哪来。
+
+**Q：GIF 太大想压小？**
+用 `--max-side 240` 或 `--max-frames 30`（抽帧）。注意抽帧会让动画不流畅。
+
+**Q：静态图体积能再小点吗？**
+加 `--static-format webp`，省约 30% 且完全无损。
+
+---
+

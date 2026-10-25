@@ -1,0 +1,36 @@
+# 转换产物（体积大，不入库）
+表情转换器/
+converter/output/
+converter/input/output/
+converter/emoji-list_*/
+converter/input/emoji-list_*/
+
+# 打包中间产物
+build/
+dist/
+*.spec
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 测试残留
+*_test*/
+_test*/
+
+# 系统/编辑器
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# 本机临时
+*.tmp
+*.log
+
+# 本机快捷方式（指向本机路径，不通用）
+*.lnk
