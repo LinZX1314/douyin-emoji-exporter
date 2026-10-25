@@ -11,7 +11,7 @@
 ```
 1. 油猴脚本      →  导出 emoji-list.json
                           ↓
-2. 表情转换器.exe →  下载 + 转换 + 写入独立文件夹
+2. douyin-emoji-exporter.exe →  下载 + 转换 + 写入独立文件夹
 ```
 
 两者之间只通过一个 JSON 文件交接 —— 不需要同时运行，不需要登录态，转换器可以随时重跑。
@@ -20,12 +20,12 @@
 
 ## 快速开始
 
-1. 到 [Releases](https://github.com/LinZX1314/douyin-emoji-exporter/releases/latest) 下载 `emoji-converter-win64.zip` 并解压
-2. 装油猴脚本 → 在抖音里抓取 → 得到 `emoji-list-xxx.json`
-3. 把 json 拖到「拖放JSON到这里.lnk」上（或直接拖到 `表情转换器.exe` 上）
-4. 产物出现在 `emoji-list_<日期>-<时间>\` 文件夹里
+1. 装油猴脚本 → 在抖音里抓取 → 得到 `emoji-list-xxx.json`
+2. 到 [Releases](https://github.com/LinZX1314/douyin-emoji-exporter/releases/latest) 下载 `douyin-emoji-exporter.exe`
+3. **把 json 文件直接拖到这个 exe 上**
+4. 约 20 秒后，产物出现在 exe 旁边的新文件夹 `emoji-list_<日期>-<时间>\` 里
 
-**转换器是单文件 exe，22 MB，无需安装 Python。**
+**单文件 exe，22 MB，无需安装，无需 Python。**
 
 > 也可以只用源码：`pip install -r converter/requirements.txt` 后运行 `python converter/convert.py <清单.json>`
 
@@ -35,8 +35,8 @@
 
 ### 安装
 
-1. 浏览器安装 **Tampermonkey**（油猴）扩展
-2. 打开 Tampermonkey 面板 → 添加新脚本 → 粘贴 `userscript/douyin-emoji-exporter.user.js` 全文 → 保存
+1. 浏览器安装 [**scriptcat**](https://docs.scriptcat.org/)|[**Tampermonkey**（油猴）扩展]()
+2.  [点击安装脚本](https://scriptcat.org/zh-CN/script-show-page/8734)
 
 ### 使用
 
@@ -59,14 +59,13 @@
 
 ### 最快用法：拖放
 
-**把脚本导出的 `emoji-list-xxx.json` 直接拖到 `拖放JSON到这里.lnk`（或 `表情转换器.exe`）上。**
+**把脚本导出的 `emoji-list-xxx.json` 直接拖到 `douyin-emoji-exporter.exe` 上。**
 
 程序会在 exe 同级目录下新建一个文件夹（名字带清单名和时间戳），产物就在里面：
 
 ```
-表情转换器\
-├── 表情转换器.exe
-├── 拖放JSON到这里.lnk
+(exe 所在目录)\
+├── douyin-emoji-exporter.exe
 └── emoji-list_1026-0030\      ← 产物在这里
     ├── emoji_0001.gif
     ├── emoji_0002.gif
@@ -81,9 +80,9 @@
 ### 命令行用法（可选）
 
 ```bash
-表情转换器.exe emoji-list.json                  # 基本用法
-表情转换器.exe emoji-list.json --max-side 240   # 带参数
-表情转换器.exe --help                           # 全部参数
+douyin-emoji-exporter.exe emoji-list.json                  # 基本用法
+douyin-emoji-exporter.exe emoji-list.json --max-side 240   # 带参数
+douyin-emoji-exporter.exe --help                           # 全部参数
 ```
 
 ### 常用参数
@@ -134,7 +133,7 @@ python convert.py input/emoji-list.json
 
 ## 关于打包成 exe
 
-Release 提供的是 PyInstaller **onefile 单文件版**：`表情转换器.exe`，**22 MB**。解压后目录里只有这一个 exe（外加一个拖放快捷方式和说明文档），没有任何依赖库目录。
+Release 提供的是 PyInstaller **onefile 单文件版**：`douyin-emoji-exporter.exe`，**22 MB**。下载下来就是这一个 exe，没有任何依赖库目录或附加文件。
 
 体积对比：
 
@@ -186,14 +185,13 @@ douyin-emoji-exporter/
 └── LICENSE
 ```
 
-**Release 压缩包解压后**：
+**Release 下载的就是这一个文件**：
 
 ```
-表情转换器/
-├── 拖放JSON到这里.lnk      ← 把 JSON 拖到这个上面即可
-├── 表情转换器.exe          单文件，22 MB，免安装
-└── 使用说明.md
+douyin-emoji-exporter.exe     单文件，22 MB，免安装
 ```
+
+把它放在任意目录，然后把 `emoji-list-*.json` 拖上去即可。
 
 产物位置：`emoji-list_<日期>-<时间>\`（和 exe 同级）
 
