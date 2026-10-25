@@ -21,7 +21,7 @@
 ## 快速开始
 
 1. 装油猴脚本 → 在抖音里抓取 → 得到 `emoji-list-xxx.json`
-2. 到 [Releases](https://github.com/LinZX1314/douyin-emoji-exporter/releases/latest) 下载 `douyin-emoji-exporter.exe`
+2. 到 [Releases](https://github.com/LinZX1314/douyin-emoji-exporter/releases/latest) 或者 [蓝奏云](https://wwbdf.lanzouc.com/iVrgO4ddjnqj)(密码:frh8) 下载 `douyin-emoji-exporter.exe`
 3. **把 json 文件直接拖到这个 exe 上**
 4. 约 20 秒后，产物出现在 exe 旁边的新文件夹 `emoji-list_<日期>-<时间>\` 里
 
@@ -35,7 +35,7 @@
 
 ### 安装
 
-1. 浏览器安装 [**scriptcat**](https://docs.scriptcat.org/)|[**Tampermonkey**（油猴）扩展]()
+1. 浏览器安装 [**ScriptCat**](https://docs.scriptcat.org/) 或者 **Tampermonkey**（篡改猴）扩展
 2.  [点击安装脚本](https://scriptcat.org/zh-CN/script-show-page/8734)
 
 ### 使用
