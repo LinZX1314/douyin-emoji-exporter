@@ -1,13 +1,14 @@
 # 抖音表情导出 · douyin-emoji-exporter
 
-一个油猴脚本，把抖音表情直接下载到本地：**收藏表情批量导出** + **评论区表情右键下载**，动态表情自动转成微信能发的 GIF。
-
-无需安装软件，无需命令行，无 Python 环境。
-
+[![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)]()
 [![Tampermonkey](https://img.shields.io/badge/Tampermonkey-userscript-orange.svg)](https://www.tampermonkey.net/)
 [![ScriptCat](https://img.shields.io/badge/ScriptCat-userscript-2f9e6e.svg)](https://docs.scriptcat.org/)
+
+一个油猴脚本，把抖音表情直接下载到本地：**收藏表情批量导出** + **评论区表情右键下载**，动态表情自动转成微信能发的 GIF。
+
+无需安装软件，无需命令行，无 Python 环境。
 
 ---
 
@@ -211,7 +212,3 @@ python _build.py     # 读取 _template.js + _libs/gifenc.min.js，输出 .user.
 ## License
 
 [MIT](LICENSE)
-
----
-
-[![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
