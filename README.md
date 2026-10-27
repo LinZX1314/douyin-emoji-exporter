@@ -24,9 +24,9 @@
 ## 安装
 
 1. 浏览器装 **[Tampermonkey](https://www.tampermonkey.net/)**（篡改猴）或 **[ScriptCat](https://docs.scriptcat.org/)**
-2. 打开 [`userscript/douyin-emoji-exporter.user.js`](userscript/douyin-emoji-exporter.user.js)，点 **Raw**，脚本管理器会接管安装
+2.  打开 [ScriptCat 脚本页面](https://scriptcat.org/zh-CN/script-show-page/8734) 安装。
 
-> 也可以从 [Greasy Fork](https://greasyfork.org/) / [ScriptCat 脚本页面](https://scriptcat.org/zh-CN/script-show-page/8734) 安装。
+> 也可以从 [`userscript/douyin-emoji-exporter.user.js`](userscript/douyin-emoji-exporter.user.js)，点 **Raw**，脚本管理器会接管安装
 
 ---
 
@@ -134,9 +134,6 @@ WebP 的 `ANMF` chunk 里存着每帧的真实延时（payload 字节 `[12..14]`
 
 **Q：右键表情没出现下载按钮？**
 确认是**评论区的表情图**（小图），不是头像或评论配图。另外脚本更新后需要**刷新页面**才生效。
-
-**Q：能不能不装油猴？**
-可以。用「导出 JSON」拿到清单，然后用任意工具自己下 URL，脚本不限制你怎么处理。
 
 ---
 
