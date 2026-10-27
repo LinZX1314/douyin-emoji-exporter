@@ -14,7 +14,6 @@
 ## 特点
 
 - **单文件脚本，约 54 KB** —— 抓取、下载、GIF 转换全在浏览器里完成，不依赖外部程序
-- **默认直接下载** —— 不用先导出清单再跑转换器，选完表情点一下就到本地
 - **动态表情转 GIF** —— 用内置 [gifenc](https://github.com/mattdesl/gifenc) 编码，微信可直接发送
 - **评论区表情右键下载** —— 右键任意评论表情，旁边浮出下载按钮
 - **可勾选** —— 抓取后默认全选，可以逐个取消，也能只选动态表情
@@ -212,3 +211,7 @@ python _build.py     # 读取 _template.js + _libs/gifenc.min.js，输出 .user.
 ## License
 
 [MIT](LICENSE)
+
+---
+
+[![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
