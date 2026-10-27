@@ -1,203 +1,172 @@
 # 抖音表情导出 · douyin-emoji-exporter
 
-把抖音「收藏表情」批量导出成本地文件，自动转成微信可直接发送的格式（动态转 GIF、静态转 PNG）。
+一个油猴脚本，把抖音表情直接下载到本地：**收藏表情批量导出** + **评论区表情右键下载**，动态表情自动转成微信能发的 GIF。
+
+无需安装软件，无需命令行，无 Python 环境。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
+[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)]()
 [![Tampermonkey](https://img.shields.io/badge/Tampermonkey-userscript-orange.svg)](https://www.tampermonkey.net/)
-
-**两个部件完全解耦**：
-
-```
-1. 油猴脚本      →  导出 emoji-list.json
-                          ↓
-2. douyin-emoji-exporter.exe →  下载 + 转换 + 写入独立文件夹
-```
-
-两者之间只通过一个 JSON 文件交接 —— 不需要同时运行，不需要登录态，转换器可以随时重跑。
+[![ScriptCat](https://img.shields.io/badge/ScriptCat-userscript-2f9e6e.svg)](https://docs.scriptcat.org/)
 
 ---
 
-## 快速开始
+## 特点
 
-1. 装油猴脚本 → 在抖音里抓取 → 得到 `emoji-list-xxx.json`
-2. 到 [Releases](https://github.com/LinZX1314/douyin-emoji-exporter/releases/latest) 或者 [蓝奏云](https://wwbdf.lanzouc.com/iVrgO4ddjnqj)(密码:frh8) 下载 `douyin-emoji-exporter.exe`
-3. **把 json 文件直接拖到这个 exe 上**
-4. 约 20 秒后，产物出现在 exe 旁边的新文件夹 `emoji-list_<日期>-<时间>\` 里
-
-**单文件 exe，22 MB，无需安装，无需 Python。**
-
-> 也可以只用源码：`pip install -r converter/requirements.txt` 后运行 `python converter/convert.py <清单.json>`
+- **单文件脚本，约 54 KB** —— 抓取、下载、GIF 转换全在浏览器里完成，不依赖外部程序
+- **默认直接下载** —— 不用先导出清单再跑转换器，选完表情点一下就到本地
+- **动态表情转 GIF** —— 用内置 [gifenc](https://github.com/mattdesl/gifenc) 编码，微信可直接发送
+- **评论区表情右键下载** —— 右键任意评论表情，旁边浮出下载按钮
+- **可勾选** —— 抓取后默认全选，可以逐个取消，也能只选动态表情
 
 ---
 
-## 第一部分：抓取脚本
+## 安装
 
-### 安装
+1. 浏览器装 **[Tampermonkey](https://www.tampermonkey.net/)**（篡改猴）或 **[ScriptCat](https://docs.scriptcat.org/)**
+2. 打开 [`userscript/douyin-emoji-exporter.user.js`](userscript/douyin-emoji-exporter.user.js)，点 **Raw**，脚本管理器会接管安装
 
-1. 浏览器安装 [**ScriptCat**](https://docs.scriptcat.org/) 或者 **Tampermonkey**（篡改猴）扩展
-2.  [点击安装脚本](https://scriptcat.org/zh-CN/script-show-page/8734)
+> 也可以从 [Greasy Fork](https://greasyfork.org/) / [ScriptCat 脚本页面](https://scriptcat.org/zh-CN/script-show-page/8734) 安装。
 
-### 使用
+---
+
+## 用法一：收藏表情批量导出
 
 1. 打开 <https://www.douyin.com/> 并登录
-2. 进入：**消息 → 任意私信 → 点输入框旁 😊 → 收藏的表情**
-3. **点右下角的绿色小球**（😊 图标）展开面板，点 **开始抓取**
-   - 脚本会自动滚动到列表底部，把懒加载的表情全部加载出来
-   - 也可以按 `Ctrl+Shift+E` 快捷键直接抓取
-4. 抓完点 **导出 JSON**，得到一个 `emoji-list-*.json` 文件
+2. 进入 **消息 → 任意私信 → 点输入框旁 😊 → 切到「收藏」标签**
+3. **先手动把表情面板打开**（脚本不会替你点开，这是刻意的）
+4. 点右下角的绿色小球 😊 展开面板 → 点 **抓取当前收藏表情**
+   - 脚本会自动滚到底，把懒加载的表情全部加载出来
+   - 也可以按 `Ctrl+Shift+E` 直接抓取
+5. 抓完后默认全选，需要的话点掉不要的
+6. 点 **开始下载**
 
-> **小球操作**：单击展开/收起面板；按住拖动可移到任意位置；位置和展开状态都会记住，刷新后保持。抓取完成后球上会显示数量角标。
+> **悬浮球**：单击展开/收起；按住拖动可移到任意位置；位置和展开状态会记在本地，刷新后保持。抓完会显示数量角标。
 
-### 关于「抓取不全」
+### 面板选项
 
-表情面板是**滚动加载**的。脚本会自动滚到底并等待列表稳定（连续 3 轮数量不再增加才停），所以正常情况下不需要手动滑。
-
-如果仍然不全，先手动滑到最底部再点抓取。
-
----
-
-## 第二部分：转换器
-
-### 最快用法：拖放
-
-**把脚本导出的 `emoji-list-xxx.json` 直接拖到 `douyin-emoji-exporter.exe` 上。**
-
-程序会在 exe 同级目录下新建一个文件夹（名字带清单名和时间戳），产物就在里面：
-
-```
-(exe 所在目录)\
-├── douyin-emoji-exporter.exe
-└── emoji-list_1026-0030\      ← 产物在这里
-    ├── emoji_0001.gif
-    ├── emoji_0002.gif
-    ├── ...
-    └── _report.txt
-```
-
-窗口会显示统计，看完按回车关闭。**重复拖放不会覆盖**，每次生成新文件夹。
-
-不需要 Python，不需要命令行。
-
-### 命令行用法（可选）
-
-```bash
-douyin-emoji-exporter.exe emoji-list.json                  # 基本用法
-douyin-emoji-exporter.exe emoji-list.json --max-side 240   # 带参数
-douyin-emoji-exporter.exe --help                           # 全部参数
-```
-
-### 常用参数
-
-| 参数 | 作用 |
+| 选项 | 说明 |
 | --- | --- |
-| `--static-format webp` | 静态图改用 WebP（省约 30% 体积，无损） |
-| `--format webp` | 动图也保留原格式（体积最小，但微信动态 WebP 不会动） |
-| `--max-side 240` | 最大边长 240px，GIF 体积大幅下降 |
-| `--max-frames 30` | 动图最多 30 帧（抽帧，动画会变卡） |
-| `--max-mb 5` | 单文件超过 5MB 时自动降采样 |
-| `--workers 8` | 并发线程数（默认 4） |
-
-### 源码运行（开发用）
-
-```bash
-cd converter
-pip install pillow requests
-python convert.py input/emoji-list.json
-```
+| **下载模式 · 浏览器下载** | 默认。直接把文件存到下载目录 |
+| **下载模式 · 导出 JSON** | 只导出清单 `emoji-list-*.json`，不下载文件（给需要自己处理 URL 的人） |
+| **下载格式 · 转 GIF/PNG** | 默认。动态转 GIF（微信能动），静态转 PNG |
+| **下载格式 · 原图 WebP** | 保留原始格式，体积最小、完全无损，但微信里动态 WebP 不会动 |
 
 ---
 
-## 关于体积（重要）
+## 用法二：评论区表情右键下载
 
-**GIF 格式本身决定了动图会比较大。** 这是格式限制，不是程序问题。
+在视频评论区里，**右键**任意表情图：
 
-实测 86 张表情（42 动图 + 44 静态，保留原始尺寸）：
+- 抖音会照常弹出它的「添加到表情」气泡 —— **不受影响**
+- 我们的 **「下载表情」** 绿色按钮会浮在气泡左侧
+- 点它即可下载，格式遵循面板里的「下载格式」设置
 
-| 输出配置 | 总体积 | 说明 |
-| --- | --- | --- |
-| **默认（动图 GIF + 静态 PNG）** | **145.4 MB** | GIF 130.3 MB + PNG 15.1 MB |
-| `--static-format webp` | 140.9 MB | 静态图从 15.1 降到 10.7 MB |
-| `--max-side 240` | 约 73 MB | 缩到 240px，聊天窗口够用 |
-| `--format webp` | **约 22 MB** | 保留原始体积，但微信动态 WebP 不会动 |
+鼠标点别处、滚动页面或按 `Esc` 会自动收起按钮。
 
-**为什么 GIF 这么大**：GIF 是帧间独立的，每帧都要完整存一张 256 色调色板图。实测「字节/像素/帧」稳定在 0.5~1.0，一个 148 帧、236×426 的动画，转成 GIF 必然接近 11MB。这个系数由 GIF 格式决定，**换任何语言都改变不了**。
+> **实现说明**：抖音右键表情时弹出的其实不是菜单，而是 Semi Design 的 tooltip（`role="tooltip"`），由 React 托管、鼠标移开即销毁，无法往里注入节点；浏览器原生右键菜单也无法用脚本扩展。所以这里采用**并排浮动按钮**，两边互不干扰。
+
+---
+
+## GIF 体积说明
+
+**GIF 格式本身决定了动图会比较大**，这是格式限制，不是实现问题。
+
+实测 86 张表情（42 动态 + 44 静态，原始尺寸）：
+
+| 输出配置 | 总体积 |
+| --- | --- |
+| 动态 GIF + 静态 PNG | **145 MB**（GIF 130 MB + PNG 15 MB） |
+| 静态改 WebP | 141 MB |
+| 保留原图 WebP | **约 22 MB** |
+
+**为什么这么大**：GIF 帧间独立，每帧都要完整存一张 256 色调色板图。实测「字节/像素/帧」稳定在 0.5~1.0，一张 148 帧、236×426 的动图转 GIF 必然接近 11 MB。这个系数由 GIF 格式决定，**换任何语言都改变不了**。
 
 **怎么选**：
 
-- **要发微信能动** → 用默认的 GIF。微信单文件限制 25MB，最大那张 10.9MB 没问题
-- **只要静态图/存档** → `--format webp`，体积最小且完全无损
-- **量大且不在乎缩放** → `--max-side 240`
-
-静态图默认 **PNG**（兼容性最好，任何软件都能打开）。改 `--static-format webp` 可省约 30% 体积，且是无损重编码，画质与 PNG 一致。
+- **要发微信且动画能动** → 用默认的「转 GIF/PNG」。微信单文件上限 25 MB，最大那张约 11 MB 没问题
+- **只存档 / 不在意微信动效** → 选「原图 WebP」，体积最小且完全无损
 
 ---
 
-## 关于打包成 exe
+## 技术细节
 
-Release 提供的是 PyInstaller **onefile 单文件版**：`douyin-emoji-exporter.exe`，**22 MB**。下载下来就是这一个 exe，没有任何依赖库目录或附加文件。
+### 为什么用 `GM_xmlhttpRequest`
 
-体积对比：
+实测表情 CDN **不带 CORS 响应头**，页面内 `fetch`/`XHR` 直接 `TypeError: Failed to fetch`；`canvas.getImageData` 会因污染抛 `SecurityError`。
 
-| 方案 | 体积 | 能否处理动画 WebP |
-| --- | --- | --- |
-| **Python + PyInstaller（onefile）** | **22 MB 单文件** | ✅ 可以（Pillow 完整支持） |
-| Python + PyInstaller（onedir） | 46 MB 目录（90 个文件） | ✅ 可以，但要多带一堆文件 |
-| Go（仅标准库） | 9.6 MB | ❌ 不支持 |
-| Go（+ x/image/webp） | 2.6 MB | ❌ 只能解第一帧，动画报错 |
+`GM_xmlhttpRequest` 由脚本管理器发出，不受页面同源策略限制，是唯一可靠拿到字节的方式。
 
-**为什么不用 Go**：抖音的表情**全部是动画 WebP**。实测 `golang.org/x/image/webp` 对动画 WebP 直接报 `webp: invalid format`，只能解第一帧。要用 Go 处理只能 CGO 绑 libwebp（捆 DLL、失去静态单文件优势）或自己实现 RIFF/ANMF + VP8 解码（等于重写解码器）。Pillow 开箱即用完整支持动画 WebP、透明通道和自适应调色板量化。
+### 为什么内置 gifenc
 
-**关于 onefile 的启动**：单文件版启动时要把自身内容解压到临时目录，因此首次启动会比带库目录的版本慢 1~2 秒，属正常现象。打包时已用 `--runtime-tmpdir "."` 指定为 exe 所在目录，避免某些系统上默认临时目录不可写导致的 `Could not create temporary directory!` 报错；程序退出会自动清理，不会残留文件。
+浏览器没有原生 GIF 编码 API。gifenc 是成熟的浏览器端 GIF 编码库（自适应中位切分量化），比手写 LZW 画质更好。为满足油猴脚本「单文件」要求，压缩版（约 10.8 KB）直接内联进产物。
+
+### 判定动图 / 静态图
+
+URL 里带 `.awebp` 的是动图，`.webp` 是静态图 —— 实测与真实帧数 **100% 对应**。
+
+### 判定评论区表情
+
+评论区表情 URL 统一是 `~tplv-<biz>-medium-webp:248:332` 模板、页面上渲染高度一律 120px。
+
+这里用 **URL 模板参数**判定而不是量 `naturalWidth` —— 后者会随原图变化，实测出现 310 / 323 / 248 / 493 / 343 等多种值，用尺寸阈值会漏判一半。回归验证结果：命中 11 张评论区表情，头像 **0 误伤**。
+
+### 真实帧延时
+
+WebP 的 `ANMF` chunk 里存着每帧的真实延时（payload 字节 `[12..14]`，小端毫秒）。Pillow 读这些文件会得到 `duration=None`，所以自己解析，否则所有帧都会变成 100ms，动画速度失真。
+
+### 签名有效期
+
+实测 `x-expires` 距当时约 **365 天**，并不是短时效链接。但 URL 会随页面刷新变化，建议抓到就下。
 
 ---
 
-## 转换器做了什么
+## 常见问题
 
-1. **读清单** → 解析 JSON，按 `id` 去重
-2. **并发下载** → 每张重试 2 次，403/404 不重试（签名失效重试没意义）
-3. **按帧数分流**
-   - 帧数 > 1 → 转 GIF（保留真实帧延时、透明通道）
-   - 帧数 = 1 → 转 PNG（或按 `--static-format` 改 WebP）
-4. **写盘** → 先写 `.tmp` 再原子替换，避免中断留下半个文件
-5. **写报告** → 产物目录下 `_report.txt`，记录每个文件的大小/帧数/来源 URL
+**Q：点抓取提示「请先打开发情面板」？**
+这是设计如此。脚本不替你点开面板，避免误操作。请手动进「消息 → 私信 → 😊 → 收藏」，再点抓取。
 
-### GIF 转换的关键处理
+**Q：抓到的表情不全？**
+面板是滚动加载的。脚本会自动滚到底并等列表稳定（连续 3 轮数量不增才停）。若仍不全，先手动滑到最底部再抓。
 
-- **透明通道**：单独提取 alpha 做掩模，半透明也算透明，避免边缘发黑
-- **调色板**：强制索引 255 留给透明，防止某些图丢透明
-- **帧延时**：自己解析 WebP 的 ANMF chunk（Pillow 读不到，否则所有帧都会变成 100ms，动画速度失真）
-- **disposal=2**：每帧后恢复背景，防止动态残影
+**Q：下载很慢 / 大量失败？**
+每张都有重试。若普遍失败，可能是签名过期，重新抓一次即可。
+
+**Q：右键表情没出现下载按钮？**
+确认是**评论区的表情图**（小图），不是头像或评论配图。另外脚本更新后需要**刷新页面**才生效。
+
+**Q：能不能不装油猴？**
+可以。用「导出 JSON」拿到清单，然后用任意工具自己下 URL，脚本不限制你怎么处理。
 
 ---
 
 ## 文件结构
 
-**仓库内容（源码）**：
-
 ```
 douyin-emoji-exporter/
 ├── userscript/
-│   └── douyin-emoji-exporter.user.js   油猴脚本（抓 URL → JSON）
+│   ├── douyin-emoji-exporter.user.js   ← 构建产物（安装这个）
+│   ├── _template.js                    源码模板，含 __GIFENC__ 占位符
+│   ├── _build.py                       构建脚本：内联 gifenc → 产出 .user.js
+│   └── _libs/
+│       └── gifenc.min.js               gifenc 压缩版（MIT）
 ├── converter/
-│   ├── convert.py                      转换器源码
-│   ├── requirements.txt
-│   └── input/emoji-list.json           清单格式示例
+│   ├── convert.py                      可选的 Python 转换器（命令行用）
+│   └── requirements.txt
 ├── README.md
 └── LICENSE
 ```
 
-**Release 下载的就是这一个文件**：
+### 自己构建
 
+```bash
+cd userscript
+python _build.py     # 读取 _template.js + _libs/gifenc.min.js，输出 .user.js
 ```
-douyin-emoji-exporter.exe     单文件，22 MB，免安装
-```
 
-把它放在任意目录，然后把 `emoji-list-*.json` 拖上去即可。
+构建只依赖 Python 标准库，无需安装任何包。
 
-产物位置：`emoji-list_<日期>-<时间>\`（和 exe 同级）
-
-### 清单格式
+### 清单格式（导出 JSON 时）
 
 ```json
 {
@@ -219,26 +188,30 @@ douyin-emoji-exporter.exe     单文件，22 MB，免安装
 }
 ```
 
-`id` 取自 URL 中 `~tplv` 之前那段（实测 86 个全部唯一）。不能用路径末段——那是 resize 参数，很多表情相同。
+`id` 取自 URL 中 `~tplv` 之前那段（实测 86 个全部唯一）。**不能用路径末段** —— 那是 resize 参数，很多不同表情会撞成同一个。
 
 ---
 
-## 常见问题
+## 更新记录
 
-**Q：转换时大量 403？**
-签名 URL 的 `x-expires` 到期了（实测约 1 年）。重新抓一次即可。
+### v2.1.0
 
-**Q：脚本抓到的表情不全？**
-先手动把表情面板滑到最底部，再点抓取。
+- **移除**「自动打开收藏面板」的模拟点击逻辑：不再替你点消息 → 私信 → 表情，改为只认你手动打开的面板（减少了大量易随抖音改版失效的 DOM 猜测代码）
+- **重写**评论区表情下载：原先试图往抖音右键菜单注入，参考的是 `rightMenu`/`contextMenu` 之类的类名，但抖音类名是 `iLNqted2` 这类随机串，从未匹配上。现改为在「添加到表情」气泡旁浮动「下载」按钮
+- **修正**评论区表情判定规则：改用 URL 模板参数 `medium-webp:248:332`，替代原先会漏判的尺寸阈值
 
-**Q：能不能不装油猴？**
-可以。直接把 `emoji-list.json` 里的 `items` 手填 URL 就行，转换器不关心 URL 从哪来。
+### v2.0.0
 
-**Q：GIF 太大想压小？**
-用 `--max-side 240` 或 `--max-frames 30`（抽帧）。注意抽帧会让动画不流畅。
+- 合并为单文件脚本：GIF 转换内置（gifenc），不再需要下载 exe
+- 默认直接浏览器下载，可切换导出 JSON
+- 面板改为可拖动悬浮球
 
-**Q：静态图体积能再小点吗？**
-加 `--static-format webp`，省约 30% 且完全无损。
+### v1.0.0
+
+- 初版：油猴脚本抓 URL → 导出 JSON → Python 转换器（PyInstaller 打包 exe）
 
 ---
 
+## License
+
+[MIT](LICENSE)
